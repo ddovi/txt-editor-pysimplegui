@@ -1,0 +1,73 @@
+import PySimpleGUI as sg
+import shelve
+import pyperclip
+import keyboard as key
+
+settings = shelve.open('app_settings')
+col_multiline = sg.Column([[sg.Multiline(size=(70, 35), key='_BODY_')]])
+def second_window():
+    layout = [[sg.Text('The second form is small \nHere to show that opening a window using a window works')],
+              [sg.OK()]]
+    window = sg.Window('Second Form', layout)
+    event, values = window.read()
+    window.close()
+
+def save_file_as(window, values):
+    try:
+        filename = sg.popup_get_file('Сохранить', save_as=True, no_window=True)
+        window.disappear()
+        sg.popup('Сохранено в: ' + filename)
+        window.reappear()
+    except:
+        return
+    if filename not in (None,''):
+        with open(filename,'w') as f:
+            f.write(values['_BODY_'])
+        settings.update(filename=filename, info=filename.replace('/',' > '))
+def open_file(window):
+    try:
+        filename = sg.popup_get_file('Имя файла:', title='Open', no_window=True)
+        window.disappear()
+        sg.popup('Открыт файл: ' + filename)
+        window.reappear()
+    except:
+        return
+    if filename not in (None,''):
+        with open(filename,'r') as f:
+            file_text = f.read()
+        window['_BODY_'].update(value=file_text)
+        settings.update(filename=filename, body=file_text, info=filename.replace('/',' > '))
+
+def start():
+    menu_def = [['&Файл', ['&Открыть', '&Сохранить','Выход']],
+                ['&Помощь', '&О программе'], ]
+    layout = [
+        [sg.Menu(menu_def, tearoff=False, pad=(200, 1))],
+        [sg.Text('Текст')],
+        [sg.Pane([col_multiline], size=(500,400))]
+    ]
+    window = sg.Window("Тексовый редактор",
+                       layout,
+                       default_element_size=(12, 1),
+                       default_button_element_size=(12, 1),
+                       right_click_menu=['Right', ['Удалить', 'Вставить']]
+                       )
+    while True:
+        event, values = window.read()
+        if event in (sg.WIN_CLOSED, 'Выход'):
+            break
+        if event == 'О программе':
+            window.disappear()
+            sg.popup('Сделал ученик 302 группы', 'Стукалов Максим', grab_anywhere=True)
+            window.reappear()
+        elif event in ('Открыть'):
+            open_file(window)
+        elif event in ('Сохранить'):
+            save_file_as(window, values)
+        if event == 'Удалить':
+            key.send('ctrl+A+backspace')
+        elif event == 'Вставить':
+            key.send('ctrl+v')
+    window.close()
+
+start()
