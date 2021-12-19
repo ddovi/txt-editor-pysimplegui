@@ -58,7 +58,7 @@ def start():
             break
         if event == 'О программе':
             window.disappear()
-            sg.popup('Сделал ученик 302 группы', 'Стукалов Максим', grab_anywhere=True)
+            sg.popup('', '', grab_anywhere=True)
             window.reappear()
         elif event in ('Открыть'):
             open_file(window)
